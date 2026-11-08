@@ -1,0 +1,691 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>سینانیم</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lalezar&family=Vazirmatn:wght@400;500;700&display=swap">
+<style>
+  /* Layout: one centered column. Hero with a mood-based picker that prints a ticket, then a filterable poster grid. */
+  :root {
+    --bg: #EDF0F2;
+    --surface: #FFFFFF;
+    --fg: #0F1A24;
+    --muted: #56636F;
+    --line: #CDD5DB;
+    --film: #B45F06;
+    --anime: #0B7A84;
+    --font-display: "Lalezar", "Vazirmatn", Tahoma, sans-serif;
+    --font-body: "Vazirmatn", Tahoma, "Segoe UI", sans-serif;
+    --font-latin: "Vazirmatn", system-ui, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0B1117; --surface: #131B23; --fg: #E8EDF1; --muted: #98A6B2; --line: #26323D;
+      --film: #F5B63A; --anime: #43C6D0; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0B1117; --surface: #131B23; --fg: #E8EDF1; --muted: #98A6B2; --line: #26323D;
+    --film: #F5B63A; --anime: #43C6D0; color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.7;
+    padding-block: 1.25rem 3rem;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  .wrap { max-width: 64rem; margin-inline: auto; display: flex; flex-direction: column; gap: 2.5rem; }
+  button, input { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+
+  header.top { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+  .brand { font-family: var(--font-display); font-size: 1.75rem; line-height: 1; letter-spacing: 0; }
+  .brand span { color: var(--film); }
+  nav.links { display: flex; gap: 1.25rem; font-size: 0.9rem; color: var(--muted); }
+  nav.links a { color: inherit; text-decoration: none; }
+  nav.links a:hover { color: var(--fg); text-decoration: underline; }
+
+  h1 {
+    font-family: var(--font-display); font-weight: 400;
+    font-size: clamp(2.4rem, 9vw, 4.4rem); line-height: 1.15; margin: 0; text-wrap: balance;
+  }
+  .lede { color: var(--muted); max-width: 34rem; margin: 0.5rem 0 0; }
+
+  .picker { display: flex; flex-direction: column; gap: 1.5rem; }
+  .controls { display: flex; flex-direction: column; gap: 0.9rem; }
+  .row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+  .row > .lab { font-size: 0.8rem; letter-spacing: 0.04em; color: var(--muted); min-width: 4.5rem; }
+  .chip {
+    border: 1px solid var(--line); background: var(--surface); border-radius: 999px;
+    padding: 0.3rem 0.95rem; cursor: pointer; font-size: 0.9rem; line-height: 1.5;
+  }
+  .chip:hover { border-color: var(--fg); }
+  .chip[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+
+  /* Ticket */
+  .ticket {
+    position: relative; display: grid; grid-template-columns: 1fr 9.5rem;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 0.6rem; overflow: hidden;
+  }
+  .ticket .main { padding: 1.25rem 1.4rem; display: flex; flex-direction: column; gap: 0.35rem; min-width: 0; }
+  .kind { font-size: 0.8rem; font-weight: 700; letter-spacing: 0.04em; }
+  .kind.film { color: var(--film); }
+  .kind.anime { color: var(--anime); }
+  .ticket h2 { font-family: var(--font-display); font-weight: 400; font-size: clamp(1.9rem, 6vw, 2.8rem); line-height: 1.2; margin: 0; text-wrap: balance; }
+  .orig { direction: ltr; text-align: right; font-family: var(--font-latin); color: var(--muted); font-size: 0.9rem; }
+  .meta { color: var(--muted); font-size: 0.92rem; }
+  .moods { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.4rem; }
+  .moods span { font-size: 0.8rem; border: 1px solid var(--line); border-radius: 999px; padding: 0 0.7rem; color: var(--muted); }
+  .again { align-self: flex-start; margin-top: 0.8rem; background: var(--fg); color: var(--bg); border: 0; border-radius: 0.4rem; padding: 0.45rem 1.1rem; cursor: pointer; font-weight: 500; }
+  .again:hover { opacity: 0.88; }
+  .stub {
+    border-inline-start: 2px dashed var(--line);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.2rem;
+    color: #fff; text-align: center; padding: 1rem 0.5rem;
+    background: linear-gradient(165deg, hsl(var(--h) 55% 34%), hsl(calc(var(--h) + 35) 60% 16%));
+  }
+  .stub .yr { font-family: var(--font-display); font-size: 2.6rem; line-height: 1; font-variant-numeric: tabular-nums; }
+  .stub .tp { font-size: 0.8rem; opacity: 0.85; }
+  .ticket::before, .ticket::after {
+    content: ""; position: absolute; width: 1.1rem; height: 1.1rem; border-radius: 50%;
+    background: var(--bg); border: 1px solid var(--line); inset-inline-end: calc(9.5rem - 0.55rem); z-index: 2;
+  }
+  .ticket::before { top: -0.6rem; }
+  .ticket::after { bottom: -0.6rem; }
+  @media (max-width: 34rem) {
+    .ticket { grid-template-columns: 1fr; }
+    .stub { border-inline-start: 0; border-top: 2px dashed var(--line); flex-direction: row; gap: 0.8rem; padding: 0.7rem 1rem; }
+    .stub .yr { font-size: 1.8rem; }
+    .ticket::before, .ticket::after { display: none; }
+  }
+
+  /* Catalog */
+  .cat-head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 1rem; }
+  h3 { font-family: var(--font-display); font-weight: 400; font-size: 2rem; line-height: 1.2; margin: 0; }
+  .tools { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; }
+  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 0.5rem; overflow: hidden; background: var(--surface); }
+  .seg button { border: 0; background: transparent; padding: 0.35rem 1rem; cursor: pointer; font-size: 0.9rem; }
+  .seg button + button { border-inline-start: 1px solid var(--line); }
+  .seg button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+  .search {
+    border: 1px solid var(--line); background: var(--surface); border-radius: 0.5rem;
+    padding: 0.4rem 0.9rem; width: 12rem; max-width: 100%;
+  }
+  .search::placeholder { color: var(--muted); }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr)); gap: 1rem; margin-top: 1.25rem; }
+  .poster {
+    all: unset; box-sizing: border-box; cursor: pointer; aspect-ratio: 2 / 3; max-width: 100%;
+    display: flex; flex-direction: column; justify-content: space-between; padding: 0.8rem; border-radius: 0.4rem;
+    color: #fff; position: relative; overflow: hidden;
+    background: linear-gradient(165deg, hsl(var(--h) 55% 34%), hsl(calc(var(--h) + 35) 60% 16%));
+    transition: transform 0.15s ease;
+  }
+  .poster:hover { transform: translateY(-3px); }
+  .poster:focus-visible { outline: 2px solid var(--fg); outline-offset: 3px; }
+  .poster::before, .poster::after {
+    content: ""; position: absolute; top: 0; bottom: 0; width: 0.5rem;
+    background: repeating-linear-gradient(to bottom, rgba(255,255,255,0.28) 0 0.35rem, transparent 0.35rem 0.8rem);
+    opacity: 0.55;
+  }
+  .poster::before { inset-inline-start: 0; }
+  .poster::after { inset-inline-end: 0; }
+  .poster .tags { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-inline: 0.3rem; }
+  .poster .tag { font-size: 0.72rem; background: rgba(255,255,255,0.18); padding: 0 0.55rem; border-radius: 999px; }
+  .poster .tag.new { background: #fff; color: #111; font-weight: 700; }
+  .poster .tt { font-family: var(--font-display); font-size: 1.55rem; line-height: 1.2; margin-inline: 0.3rem; text-wrap: balance; }
+  .poster .sub { display: flex; justify-content: space-between; gap: 0.5rem; font-size: 0.75rem; opacity: 0.88; margin-inline: 0.3rem; margin-top: 0.2rem; }
+  .poster .sub .en { direction: ltr; font-family: var(--font-latin); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+  .poster .sub .yr { font-variant-numeric: tabular-nums; }
+  .empty { color: var(--muted); padding: 2rem 0; }
+
+  /* Admin: add titles */
+  h4 { font-family: var(--font-display); font-weight: 400; font-size: 1.4rem; line-height: 1.3; margin: 2rem 0 0; }
+  .form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; margin-top: 1rem; }
+  .field { display: flex; flex-direction: column; gap: 0.3rem; min-width: 0; border: 0; padding: 0; margin: 0; }
+  .field.wide { grid-column: 1 / -1; }
+  .field label, .field legend { font-size: 0.85rem; color: var(--muted); padding: 0; }
+  .field input[type="text"], .field select {
+    border: 1px solid var(--line); background: var(--surface); border-radius: 0.5rem;
+    padding: 0.45rem 0.8rem; width: 100%; min-width: 0;
+  }
+  .hue { display: flex; align-items: center; gap: 0.8rem; }
+  .hue input { flex: 1; min-width: 0; }
+  .swatch { width: 2.2rem; height: 3.2rem; border-radius: 0.3rem; flex: none;
+    background: linear-gradient(165deg, hsl(var(--h) 55% 34%), hsl(calc(var(--h) + 35) 60% 16%)); }
+  .actions { grid-column: 1 / -1; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+  .actions .again { margin-top: 0; }
+  #adminStatus { font-size: 0.9rem; color: var(--muted); }
+  #adminStatus.bad { color: var(--fg); font-weight: 700; }
+  .alist { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.75rem; }
+  .arow { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; padding: 0.5rem 0.9rem;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 0.5rem; }
+  .arow .an { min-width: 0; overflow-wrap: anywhere; display: flex; align-items: center; gap: 0.6rem; }
+  .thumb { width: 1.8rem; height: 2.7rem; object-fit: cover; border-radius: 0.2rem; flex: none; }
+  .acts { display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: flex-end; }
+  #posterStatus { font-size: 0.9rem; color: var(--muted); margin: 0.5rem 0 0; }
+  #posterStatus.bad { color: var(--fg); font-weight: 700; }
+  .poster img.pic { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .poster .shade { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.78), rgba(0,0,0,0.05) 60%); }
+  .poster .tags, .poster .low { position: relative; z-index: 1; }
+  .poster::before, .poster::after { z-index: 2; }
+  @media (max-width: 34rem) { .form { grid-template-columns: 1fr; } }
+
+  footer { color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--line); padding-top: 1rem; }
+
+  @media (prefers-reduced-motion: reduce) { .poster { transition: none; } }
+</style>
+
+<div class="wrap" dir="rtl" lang="fa">
+  <header class="top">
+    <div class="brand">سینا<span>نیم</span></div>
+    <nav class="links" aria-label="بخش‌ها">
+      <a href="#pick">پیشنهاد امشب</a>
+      <a href="#catalog">همه عنوان‌ها</a>
+    </nav>
+  </header>
+
+  <section class="picker" id="pick" aria-labelledby="h1">
+    <div>
+      <h1 id="h1">امشب چی ببینیم؟</h1>
+      <p class="lede">حال‌وهوات رو انتخاب کن تا یک فیلم یا انیمه برات بیرون بکشیم.</p>
+    </div>
+    <div class="controls">
+      <div class="row" id="moodRow"><span class="lab">حال‌وهوا</span></div>
+      <div class="row" id="kindRow"><span class="lab">نوع</span></div>
+    </div>
+    <article class="ticket" id="ticket" aria-live="polite"></article>
+  </section>
+
+  <section id="catalog" aria-labelledby="h3">
+    <div class="cat-head">
+      <h3 id="h3">همه عنوان‌ها</h3>
+      <div class="tools">
+        <div class="seg" id="tabs" role="group" aria-label="نوع عنوان">
+          <button type="button" data-v="all" aria-pressed="true">همه</button>
+          <button type="button" data-v="film" aria-pressed="false">فیلم</button>
+          <button type="button" data-v="anime" aria-pressed="false">انیمه</button>
+        </div>
+        <input class="search" id="q" type="search" placeholder="جستجوی نام یا ژانر" aria-label="جستجو">
+      </div>
+    </div>
+    <div class="grid" id="grid"></div>
+    <p class="empty" id="syncNote" hidden>عنوان‌های تازه هنوز بارگذاری نشده‌اند و ممکن است فهرست قدیمی باشد.</p>
+    <p class="empty" id="empty" hidden>چیزی پیدا نشد. نام دیگری امتحان کن یا فیلتر را بردار.</p>
+  </section>
+
+  <section id="admin" hidden aria-labelledby="h-admin">
+    <h3 id="h-admin">افزودن عنوان جدید</h3>
+    <p class="lede">این بخش فقط برای تو و ویرایشگرهای صفحه دیده می‌شود. عنوان تازه بلافاصله در فهرست و در «امشب چی ببینیم» ظاهر می‌شود.</p>
+    <form class="form" id="addForm" novalidate>
+      <div class="field">
+        <label for="fKind">نوع</label>
+        <select id="fKind"><option value="film">فیلم</option><option value="anime">انیمه</option></select>
+      </div>
+      <div class="field">
+        <label for="fYear">سال انتشار</label>
+        <input id="fYear" type="text" inputmode="numeric" maxlength="4" placeholder="۲۰۲۴">
+      </div>
+      <div class="field">
+        <label for="fTitle">نام فارسی</label>
+        <input id="fTitle" type="text" maxlength="80">
+      </div>
+      <div class="field">
+        <label for="fOrig">نام اصلی</label>
+        <input id="fOrig" type="text" dir="ltr" lang="en" maxlength="100">
+      </div>
+      <div class="field wide">
+        <label for="fGenre">ژانر</label>
+        <input id="fGenre" type="text" maxlength="30" placeholder="مثلاً درام">
+      </div>
+      <fieldset class="field wide">
+        <legend>حال‌وهوا</legend>
+        <div class="row" id="fMoods"></div>
+      </fieldset>
+      <div class="field wide">
+        <label for="fHue">رنگ پوستر</label>
+        <div class="hue"><input id="fHue" type="range" min="0" max="359" value="200"><span class="swatch" id="swatch"></span></div>
+      </div>
+      <div class="actions">
+        <button class="again" type="submit">افزودن به فهرست</button>
+        <span id="adminStatus" role="status"></span>
+      </div>
+    </form>
+    <h4>عنوان‌های اضافه‌شده</h4>
+    <div class="alist" id="addedList"></div>
+    <div id="posterAdmin" hidden>
+      <h4>تصویر پوستر</h4>
+      <p class="lede">برای هر عنوان یک تصویر بگذار. فقط تصویری را بارگذاری کن که حق استفاده‌اش را داری. تصویر خودکار کوچک می‌شود.</p>
+      <p id="posterStatus" role="status"></p>
+      <div class="alist" id="posterList"></div>
+    </div>
+  </section>
+
+  <footer>سینانیم یک فهرست کوچک از فیلم‌ها و انیمه‌های شناخته‌شده است. پوسترها طرح‌های ساده‌اند و تصویر رسمی عنوان‌ها نیستند.</footer>
+</div>
+
+<script>
+  document.documentElement.setAttribute("dir", "rtl");
+  document.documentElement.setAttribute("lang", "fa");
+
+  var nf = new Intl.NumberFormat("fa-IR", { useGrouping: false });
+  var KIND = { film: "فیلم", anime: "انیمه" };
+  var MOODS = ["آرام", "هیجان‌انگیز", "فکری", "احساسی"];
+
+  var base = [
+    { t: "اینسپشن", o: "Inception", y: 2010, k: "film", g: "علمی‌تخیلی", m: ["فکری", "هیجان‌انگیز"], h: 215 },
+    { t: "پدرخوانده", o: "The Godfather", y: 1972, k: "film", g: "جنایی", m: ["فکری"], h: 28 },
+    { t: "انگل", o: "Parasite", y: 2019, k: "film", g: "درام", m: ["فکری", "هیجان‌انگیز"], h: 150 },
+    { t: "جدایی نادر از سیمین", o: "A Separation", y: 2011, k: "film", g: "درام", m: ["فکری", "احساسی"], h: 12 },
+    { t: "میان‌ستاره‌ای", o: "Interstellar", y: 2014, k: "film", g: "علمی‌تخیلی", m: ["فکری", "احساسی"], h: 245 },
+    { t: "رستگاری در شاوشنک", o: "The Shawshank Redemption", y: 1994, k: "film", g: "درام", m: ["احساسی"], h: 188 },
+    { t: "طعم گیلاس", o: "Taste of Cherry", y: 1997, k: "film", g: "درام", m: ["آرام", "فکری"], h: 42 },
+    { t: "بلید رانر ۲۰۴۹", o: "Blade Runner 2049", y: 2017, k: "film", g: "علمی‌تخیلی", m: ["آرام", "فکری"], h: 330 },
+    { t: "شهر ارواح", o: "Spirited Away", y: 2001, k: "anime", g: "فانتزی", m: ["آرام", "احساسی"], h: 165 },
+    { t: "نام تو", o: "Your Name", y: 2016, k: "anime", g: "عاشقانه", m: ["احساسی"], h: 280 },
+    { t: "حمله به تایتان", o: "Attack on Titan", y: 2013, k: "anime", g: "اکشن", m: ["هیجان‌انگیز"], h: 8 },
+    { t: "دفترچه مرگ", o: "Death Note", y: 2006, k: "anime", g: "معمایی", m: ["فکری", "هیجان‌انگیز"], h: 300 },
+    { t: "کابوی بی‌باپ", o: "Cowboy Bebop", y: 1998, k: "anime", g: "علمی‌تخیلی", m: ["آرام", "هیجان‌انگیز"], h: 205 },
+    { t: "قلعه متحرک هاول", o: "Howl's Moving Castle", y: 2004, k: "anime", g: "فانتزی", m: ["آرام", "احساسی"], h: 95 },
+    { t: "کیمیاگر فولادین: برادری", o: "Fullmetal Alchemist: Brotherhood", y: 2009, k: "anime", g: "ماجراجویی", m: ["هیجان‌انگیز", "احساسی"], h: 35 },
+    { t: "ویولت اورگاردن", o: "Violet Evergarden", y: 2018, k: "anime", g: "درام", m: ["احساسی", "آرام"], h: 255 }
+  ];
+  var added = [];
+  var pics = {};
+  var assetsApi = null;
+  base.forEach(function (it, i) { it.key = "b" + i; });
+  var items = base.slice();
+
+  function picOk(id) { return typeof id === "string" && /^[0-9a-f]{32}$/.test(id); }
+
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+
+  /* ----- chip groups ----- */
+  var mood = "all", kind = "all", current = null;
+
+  function buildChips(rowId, list, onPick) {
+    var row = document.getElementById(rowId);
+    list.forEach(function (c, i) {
+      var b = el("button", "chip", c.label);
+      b.type = "button";
+      b.setAttribute("aria-pressed", i === 0 ? "true" : "false");
+      b.addEventListener("click", function () {
+        row.querySelectorAll(".chip").forEach(function (x) { x.setAttribute("aria-pressed", "false"); });
+        b.setAttribute("aria-pressed", "true");
+        onPick(c.v);
+      });
+      row.appendChild(b);
+    });
+  }
+
+  buildChips("moodRow",
+    [{ v: "all", label: "هر حالی" }].concat(MOODS.map(function (m) { return { v: m, label: m }; })),
+    function (v) { mood = v; pick(); });
+  buildChips("kindRow",
+    [{ v: "all", label: "هر دو" }, { v: "film", label: "فیلم" }, { v: "anime", label: "انیمه" }],
+    function (v) { kind = v; pick(); });
+
+  /* ----- ticket ----- */
+  function showTicket(it) {
+    current = it;
+    var t = document.getElementById("ticket");
+    t.style.setProperty("--h", it.h);
+    t.textContent = "";
+
+    var main = el("div", "main");
+    main.appendChild(el("div", "kind " + it.k, KIND[it.k]));
+    main.appendChild(el("h2", null, it.t));
+    var o = el("div", "orig", it.o);
+    o.setAttribute("lang", "en");
+    main.appendChild(o);
+    main.appendChild(el("div", "meta", (it.g ? it.g + " · " : "") + nf.format(it.y)));
+    var mw = el("div", "moods");
+    it.m.forEach(function (m) { mw.appendChild(el("span", null, m)); });
+    main.appendChild(mw);
+    var again = el("button", "again", "یکی دیگه");
+    again.type = "button";
+    again.addEventListener("click", function () { pick(); });
+    main.appendChild(again);
+
+    var stub = el("div", "stub");
+    if (picOk(pics[it.key])) {
+      stub.style.backgroundImage = "linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(/_blob/" + pics[it.key] + ")";
+      stub.style.backgroundSize = "cover";
+      stub.style.backgroundPosition = "center";
+    }
+    stub.appendChild(el("div", "yr", nf.format(it.y)));
+    stub.appendChild(el("div", "tp", KIND[it.k]));
+
+    t.appendChild(main);
+    t.appendChild(stub);
+  }
+
+  function pick() {
+    var pool = items.filter(function (it) {
+      return (kind === "all" || it.k === kind) && (mood === "all" || it.m.indexOf(mood) !== -1);
+    });
+    if (!pool.length) return;
+    var choices = pool.length > 1 ? pool.filter(function (x) { return x !== current; }) : pool;
+    showTicket(choices[Math.floor(Math.random() * choices.length)]);
+  }
+
+  /* ----- catalog ----- */
+  var tab = "all", query = "";
+
+  function renderGrid() {
+    var grid = document.getElementById("grid");
+    grid.textContent = "";
+    var q = query.trim().toLowerCase();
+    var shown = items.filter(function (it) {
+      if (tab !== "all" && it.k !== tab) return false;
+      if (!q) return true;
+      return (it.t + " " + it.o + " " + it.g).toLowerCase().indexOf(q) !== -1;
+    });
+    shown.forEach(function (it) {
+      var b = el("button", "poster");
+      b.type = "button";
+      b.style.setProperty("--h", it.h);
+      b.setAttribute("aria-label", it.t + "، " + KIND[it.k] + "، " + nf.format(it.y));
+      if (picOk(pics[it.key])) {
+        var im = el("img", "pic");
+        im.src = "/_blob/" + pics[it.key];
+        im.alt = "";
+        im.loading = "lazy";
+        b.appendChild(im);
+        b.appendChild(el("span", "shade"));
+      }
+      var tags = el("span", "tags");
+      tags.appendChild(el("span", "tag", KIND[it.k]));
+      if (it.fresh) tags.appendChild(el("span", "tag new", "جدید"));
+      b.appendChild(tags);
+      var low = el("span", "low");
+      low.appendChild(el("span", "tt", it.t));
+      var sub = el("span", "sub");
+      var en = el("span", "en", it.o);
+      en.setAttribute("lang", "en");
+      sub.appendChild(en);
+      sub.appendChild(el("span", "yr", nf.format(it.y)));
+      low.appendChild(sub);
+      b.appendChild(low);
+      b.addEventListener("click", function () {
+        showTicket(it);
+        var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        document.getElementById("pick").scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+      });
+      grid.appendChild(b);
+    });
+    document.getElementById("empty").hidden = shown.length > 0;
+  }
+
+  document.querySelectorAll("#tabs button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      document.querySelectorAll("#tabs button").forEach(function (x) { x.setAttribute("aria-pressed", "false"); });
+      b.setAttribute("aria-pressed", "true");
+      tab = b.getAttribute("data-v");
+      renderGrid();
+    });
+  });
+  document.getElementById("q").addEventListener("input", function (e) {
+    query = e.target.value;
+    renderGrid();
+  });
+
+  /* first suggestion changes by day, so the page opens with a real ticket */
+  var day = Math.floor(Date.now() / 86400000);
+  showTicket(base[day % base.length]);
+  renderGrid();
+
+  /* ----- new titles live in the shared db; only editors can add ----- */
+  var DAY = 86400000;
+  var store = null;
+
+  function normDigits(s) {
+    return String(s)
+      .replace(/[۰-۹]/g, function (c) { return c.charCodeAt(0) - 0x06F0; })
+      .replace(/[٠-٩]/g, function (c) { return c.charCodeAt(0) - 0x0660; });
+  }
+
+  function fromDoc(d) {
+    var v = d.data() || {};
+    var y = Number(v.y);
+    if (!v.t || !(y >= 1900 && y <= 2100)) return null;
+    var ad = Number(v.added) || 0;
+    return {
+      id: d.id, key: d.id, t: String(v.t), o: String(v.o || ""), y: y,
+      k: v.k === "anime" ? "anime" : "film", g: String(v.g || ""),
+      m: Array.isArray(v.m) ? v.m.filter(function (x) { return MOODS.indexOf(x) !== -1; }) : [],
+      h: Number(v.h) || 0, fresh: ad > 0 && Date.now() - ad < 14 * DAY
+    };
+  }
+
+  function setStatus(msg, bad) {
+    var s = document.getElementById("adminStatus");
+    s.textContent = msg;
+    s.className = bad ? "bad" : "";
+  }
+
+  function renderAdded() {
+    var box = document.getElementById("addedList");
+    box.textContent = "";
+    if (!added.length) {
+      box.appendChild(el("p", "empty", "هنوز عنوانی اضافه نکرده‌ای."));
+      return;
+    }
+    added.forEach(function (it) {
+      var row = el("div", "arow");
+      row.appendChild(el("span", "an", it.t + " · " + KIND[it.k] + " · " + nf.format(it.y)));
+      var del = el("button", "chip", "حذف");
+      del.type = "button";
+      del.addEventListener("click", function () {
+        if (del.getAttribute("data-sure") !== "1") {
+          del.setAttribute("data-sure", "1");
+          del.textContent = "مطمئنی؟ دوباره بزن";
+          return;
+        }
+        store.doc("titles/" + it.id).delete().then(function () { return dropPoster(it.key); }).catch(function () {
+          setStatus("حذف انجام نشد. دوباره امتحان کن.", true);
+        });
+      });
+      row.appendChild(del);
+      box.appendChild(row);
+    });
+  }
+
+  function initAdmin() {
+    document.getElementById("admin").hidden = false;
+    var moodsBox = document.getElementById("fMoods");
+    MOODS.forEach(function (m) {
+      var b = el("button", "chip", m);
+      b.type = "button";
+      b.setAttribute("aria-pressed", "false");
+      b.addEventListener("click", function () {
+        b.setAttribute("aria-pressed", b.getAttribute("aria-pressed") === "true" ? "false" : "true");
+      });
+      moodsBox.appendChild(b);
+    });
+    var hue = document.getElementById("fHue");
+    var sw = document.getElementById("swatch");
+    hue.value = Math.floor(Math.random() * 360);
+    function paint() { sw.style.setProperty("--h", hue.value); }
+    hue.addEventListener("input", paint);
+    paint();
+
+    var fTitle = document.getElementById("fTitle");
+    var fOrig = document.getElementById("fOrig");
+    var fYear = document.getElementById("fYear");
+    var fGenre = document.getElementById("fGenre");
+    var fKind = document.getElementById("fKind");
+    var busy = false;
+
+    document.getElementById("addForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+      if (busy) return;
+      var t = fTitle.value.trim();
+      var y = parseInt(normDigits(fYear.value.trim()), 10);
+      if (!t) { setStatus("نام فارسی را بنویس.", true); fTitle.focus(); return; }
+      if (!(y >= 1900 && y <= 2100)) { setStatus("سال را چهار رقمی بنویس، مثلاً ۲۰۲۴.", true); fYear.focus(); return; }
+      var m = [];
+      moodsBox.querySelectorAll(".chip").forEach(function (b) {
+        if (b.getAttribute("aria-pressed") === "true") m.push(b.textContent);
+      });
+      busy = true;
+      setStatus("در حال ذخیره…", false);
+      store.collection("titles").add({
+        t: t, o: fOrig.value.trim(), y: y, k: fKind.value, g: fGenre.value.trim(),
+        m: m, h: Number(hue.value), added: Date.now()
+      }).then(function () {
+        fTitle.value = ""; fOrig.value = ""; fYear.value = ""; fGenre.value = "";
+        moodsBox.querySelectorAll(".chip").forEach(function (b) { b.setAttribute("aria-pressed", "false"); });
+        setStatus("اضافه شد.", false);
+        fTitle.focus();
+      }).catch(function (err) {
+        setStatus(err && err.code === "quota_exceeded"
+          ? "ظرفیت فهرست پر است. چند عنوان را حذف کن."
+          : "ذخیره نشد. دوباره امتحان کن.", true);
+      }).then(function () { busy = false; });
+    });
+  }
+
+  function setPosterStatus(msg, bad) {
+    var s = document.getElementById("posterStatus");
+    s.textContent = msg;
+    s.className = bad ? "bad" : "";
+  }
+
+  function resizeImage(file) {
+    return createImageBitmap(file).then(function (bm) {
+      var w = Math.min(640, bm.width);
+      var h = Math.round(bm.height * w / bm.width);
+      var c = document.createElement("canvas");
+      c.width = w; c.height = h;
+      c.getContext("2d").drawImage(bm, 0, 0, w, h);
+      return new Promise(function (res) {
+        c.toBlob(function (b) { res(b || file); }, "image/jpeg", 0.85);
+      });
+    }).catch(function () { return file; });
+  }
+
+  function dropPoster(key) {
+    var pid = pics[key];
+    if (!pid || !store) return Promise.resolve();
+    return store.doc("posters/" + key).delete().then(function () {
+      if (assetsApi && picOk(pid)) return assetsApi.delete(pid).catch(function () {});
+    });
+  }
+
+  function uploadPoster(it, file, btn) {
+    var old = pics[it.key];
+    var label = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = "در حال بارگذاری…";
+    setPosterStatus("", false);
+    return resizeImage(file)
+      .then(function (blob) { return assetsApi.upload(blob); })
+      .then(function (r) { return store.doc("posters/" + it.key).set({ a: r.id }); })
+      .then(function () {
+        if (picOk(old)) assetsApi.delete(old).catch(function () {});
+        setPosterStatus("تصویر «" + it.t + "» ذخیره شد.", false);
+      })
+      .catch(function () {
+        btn.disabled = false;
+        btn.textContent = label;
+        setPosterStatus("بارگذاری انجام نشد. تصویر دیگری امتحان کن.", true);
+      });
+  }
+
+  function renderPosters() {
+    var box = document.getElementById("posterList");
+    if (!assetsApi || !store) return;
+    box.textContent = "";
+    items.forEach(function (it) {
+      var pid = pics[it.key];
+      var row = el("div", "arow");
+      var left = el("span", "an");
+      if (picOk(pid)) {
+        var th = el("img", "thumb");
+        th.src = "/_blob/" + pid;
+        th.alt = "";
+        left.appendChild(th);
+      }
+      left.appendChild(el("span", null, it.t));
+      row.appendChild(left);
+
+      var acts = el("span", "acts");
+      var inp = document.createElement("input");
+      inp.type = "file";
+      inp.accept = "image/*";
+      inp.hidden = true;
+      inp.id = "pf-" + it.key;
+      var pickBtn = el("button", "chip", picOk(pid) ? "تعویض تصویر" : "انتخاب تصویر");
+      pickBtn.type = "button";
+      pickBtn.addEventListener("click", function () { inp.click(); });
+      inp.addEventListener("change", function () {
+        if (inp.files && inp.files[0]) uploadPoster(it, inp.files[0], pickBtn);
+      });
+      acts.appendChild(inp);
+      acts.appendChild(pickBtn);
+      if (picOk(pid)) {
+        var rm = el("button", "chip", "حذف تصویر");
+        rm.type = "button";
+        rm.addEventListener("click", function () {
+          dropPoster(it.key).catch(function () { setPosterStatus("حذف انجام نشد. دوباره امتحان کن.", true); });
+        });
+        acts.appendChild(rm);
+      }
+      row.appendChild(acts);
+      box.appendChild(row);
+    });
+  }
+
+  if (window.claude && window.claude.use) {
+    Promise.all([window.claude.use("db"), window.claude.use("user"), window.claude.use("assets")]).then(function (r) {
+      var db = r[0], user = r[1];
+      assetsApi = r[2];
+      if (!db) return;
+      store = db;
+      var timer = setTimeout(function () { document.getElementById("syncNote").hidden = false; }, 10000);
+      db.collection("titles").orderBy("added", "desc").onSnapshot(function (snap) {
+        if (!snap.metadata.fromCache) {
+          clearTimeout(timer);
+          document.getElementById("syncNote").hidden = true;
+        }
+        added = snap.docs.map(fromDoc).filter(Boolean);
+        items = base.concat(added);
+        renderGrid();
+        renderAdded();
+        renderPosters();
+      }, function () { clearTimeout(timer); });
+      db.collection("posters").onSnapshot(function (snap) {
+        pics = {};
+        snap.docs.forEach(function (d) {
+          var v = d.data();
+          if (v && picOk(v.a)) pics[d.id] = v.a;
+        });
+        renderGrid();
+        renderPosters();
+        if (current) showTicket(current);
+      }, function () {});
+      if (user) {
+        user.canEdit().then(function (ok) {
+          if (!ok) return;
+          initAdmin();
+          if (assetsApi) {
+            document.getElementById("posterAdmin").hidden = false;
+            renderPosters();
+          }
+        });
+      }
+    });
+  }
+</script>
+
+</body></html>
